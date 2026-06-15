@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 12 — Advanced &amp; Breadth: Multi-Agent Systems, Protocols, and the Production Stack</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #e2e8f0;
+    line-height: 1.65;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  header.page-header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #334155;
+  }
+
+  header.page-header h1 {
+    font-size: 2.4rem;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  header.page-header p.subtitle {
+    color: #94a3b8;
+    font-size: 1.05rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .continuity-note {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-left: 4px solid #a78bfa;
+    border-radius: 8px;
+    padding: 16px 22px;
+    margin-top: 22px;
+    text-align: left;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .continuity-note strong { color: #f1f5f9; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 24px;
+    font-size: 0.9rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #cbd5e1;
+  }
+
+  .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+  }
+
+  .week {
+    background: #1e293b;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid #334155;
+  }
+
+  .week-header {
+    padding: 26px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-bottom: 1px solid #334155;
+    background: linear-gradient(90deg, #4338ca 0%, #7c3aed 50%, #c026d3 100%);
+  }
+
+  .week-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .week-number {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.15rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .week-name {
+    color: #fff;
+    font-size: 1.45rem;
+    font-weight: 600;
+  }
+
+  .week-meta {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .week-body {
+    padding: 28px;
+  }
+
+  .goal {
+    background: #0f172a;
+    padding: 16px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #60a5fa;
+    margin-bottom: 28px;
+    color: #cbd5e1;
+    font-style: italic;
+  }
+
+  .goal strong {
+    color: #f1f5f9;
+    font-style: normal;
+  }
+
+  /* Sub-section styling within the week */
+  .subsection {
+    margin-bottom: 36px;
+  }
+
+  .subsection:last-child {
+    margin-bottom: 0;
+  }
+
+  .subsection-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    background: #0f172a;
+    border: 1px solid #334155;
+  }
+
+  .subsection-marker {
+    width: 8px;
+    height: 28px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .marker-multi { background: linear-gradient(180deg, #818cf8, #4338ca); }
+  .marker-proto { background: linear-gradient(180deg, #f472b6, #c026d3); }
+  .marker-stack { background: linear-gradient(180deg, #34d399, #059669); }
+  .marker-tune  { background: linear-gradient(180deg, #fbbf24, #d97706); }
+  .marker-infra { background: linear-gradient(180deg, #22d3ee, #0891b2); }
+  .marker-extra { background: linear-gradient(180deg, #94a3b8, #475569); }
+
+  .subsection-title {
+    color: #f1f5f9;
+    font-size: 1.15rem;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .subsection-tag {
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 10px;
+    background: #334155;
+    color: #cbd5e1;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .resource {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    border: 1px solid #334155;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .resource:hover {
+    border-color: #a78bfa;
+    transform: translateY(-1px);
+  }
+
+  .resource:last-child { margin-bottom: 0; }
+
+  .resource-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .resource-title {
+    color: #f1f5f9;
+    font-size: 1.02rem;
+    font-weight: 600;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .resource-type {
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .type-article  { background: #1e40af; color: #dbeafe; }
+  .type-paper    { background: #7c3aed; color: #ede9fe; }
+  .type-guide    { background: #059669; color: #d1fae5; }
+  .type-reference{ background: #ea580c; color: #ffedd5; }
+  .type-blog     { background: #0891b2; color: #cffafe; }
+  .type-github   { background: #334155; color: #e2e8f0; }
+  .type-docs     { background: #be185d; color: #fce7f3; }
+  .type-news     { background: #92400e; color: #fef3c7; }
+  .type-opp      { background: #475569; color: #e2e8f0; }
+
+  .resource-link {
+    display: inline-block;
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+    word-break: break-all;
+  }
+
+  .resource-link:hover {
+    color: #c4b5fd;
+    text-decoration: underline;
+  }
+
+  .resource-summary {
+    color: #cbd5e1;
+    font-size: 0.93rem;
+  }
+
+  .footnote {
+    background: #0f172a;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  .footnote strong { color: #cbd5e1; }
+
+  .closing-card {
+    background: linear-gradient(135deg, #4338ca 0%, #c026d3 100%);
+    padding: 32px;
+    border-radius: 14px;
+    margin-top: 30px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .closing-card h2 {
+    color: #fff;
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+  }
+
+  .closing-card p {
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 750px;
+    margin: 0 auto 14px;
+  }
+
+  .closing-checklist {
+    display: inline-block;
+    text-align: left;
+    margin-top: 8px;
+    color: #fff;
+  }
+
+  .closing-checklist li {
+    padding: 5px 0 5px 26px;
+    position: relative;
+    list-style: none;
+  }
+
+  .closing-checklist li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+    color: #fde68a;
+  }
+
+  footer.page-footer {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid #334155;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 640px) {
+    header.page-header h1 { font-size: 1.8rem; }
+    .week-name { font-size: 1.15rem; }
+    .week-body { padding: 20px; }
+    .resource { padding: 14px 16px; }
+    .subsection-title { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="page-header">
+    <h1>Week 12 — Advanced &amp; Breadth</h1>
+    <p class="subtitle">Multi-agent architectures, agent communication protocols, the production stack, fine-tuning, and safe execution. This is the post-capstone "go wider" week.</p>
+    <div class="continuity-note">
+      <strong>Where this fits:</strong> Weeks 1–6 built the foundations (prompting → transformers → LLM landscape → advanced techniques → planning → LangGraph) and the capstone put one agent into production. Week 12 widens the lens: how do <em>multiple</em> agents talk to each other, what does a real production stack look like, how do you sharpen an agent without retraining the base model, and how do you run it all safely.
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#1e40af"></span> Article</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#0891b2"></span> Blog</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#059669"></span> Guide</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#334155"></span> GitHub</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#be185d"></span> Docs</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#92400e"></span> News</div>
+    </div>
+  </header>
+
+  <!-- WEEK 12 -->
+  <div class="week">
+    <div class="week-header">
+      <div class="week-title">
+        <div class="week-number">12</div>
+        <div class="week-name">Advanced &amp; Breadth — Beyond the Single Agent</div>
+      </div>
+      <div class="week-meta">~10-14 hours · spread across the week</div>
+    </div>
+    <div class="week-body">
+
+      <div class="goal">
+        <strong>Goal:</strong> Step out of the single-agent / single-graph mental model. Learn how multi-agent systems are structured, how agents communicate (A2A, MCP), what the typical production stack looks like in 2026, how to customize agents without retraining base weights, and how to actually run them safely (sandboxes, Docker, infra).
+      </div>
+
+      <!-- SECTION 1: MULTI-AGENT ARCHITECTURES -->
+      <div class="subsection">
+        <div class="subsection-header">
+          <div class="subsection-marker marker-multi"></div>
+          <div class="subsection-title">1. Multi-Agent Architectures</div>
+          <div class="subsection-tag">5 resources</div>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">What is a Multi-Agent System? (Google Cloud)</div>
+            <span class="resource-type type-article">Article</span>
+          </div>
+          <a class="resource-link" href="https://cloud.google.com/discover/what-is-a-multi-agent-system?hl=en" target="_blank">cloud.google.com/discover/what-is-a-multi-agent-system</a>
+          <p class="resource-summary">Google Cloud's "Discover" page introducing multi-agent systems — what they are, why you'd build one instead of a monolithic agent, and the common topologies (hierarchical, peer-to-peer, supervisor/worker). The right starting point if you've only ever built single-agent graphs in LangGraph.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Multi-Agent AI (V7 Labs Blog)</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://www.v7labs.com/blog/multi-agent-ai" target="_blank">v7labs.com/blog/multi-agent-ai</a>
+          <p class="resource-summary">A practitioner-flavored take on multi-agent AI from V7 — patterns for splitting tasks across specialized agents, when to use them vs. a single agent with many tools, and the failure modes (coordination overhead, drift, conflicting plans). Pair this with the Google Cloud article for a theory-plus-practice combo.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Benchmarking Multi-Agent Architectures (LangChain)</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://www.langchain.com/blog/benchmarking-multi-agent-architectures" target="_blank">langchain.com/blog/benchmarking-multi-agent-architectures</a>
+          <p class="resource-summary">LangChain's empirical comparison of multi-agent topologies on the same task. This is the "show me the numbers" companion to the conceptual articles above — useful for forming a real intuition about when a supervisor-worker setup beats a flat network, and where multi-agent overhead actually hurts.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Microsoft AutoGen (GitHub)</div>
+            <span class="resource-type type-github">GitHub</span>
+          </div>
+          <a class="resource-link" href="https://github.com/microsoft/autogen" target="_blank">github.com/microsoft/autogen</a>
+          <p class="resource-summary">Microsoft's open-source framework for building multi-agent conversations. The main alternative to LangGraph in this space — agents talk to each other in turn-taking conversations rather than walking a graph. Worth reading the README and the examples folder to see how the same multi-agent problem feels different in AutoGen vs. LangGraph.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Distributed Multi-Agent Systems with Aspire &amp; Microsoft Agent Framework (Aspire Blog)</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://share.google/0dNLNjeuJKdJF5CFe" target="_blank">share.google/0dNLNjeuJKdJF5CFe</a>
+          <p class="resource-summary">.NET-side perspective on running multi-agent systems as distributed services using Aspire and Microsoft Agent Framework. Useful even if you're a Python person — the patterns (service discovery, telemetry, fault tolerance for agents) are language-agnostic and matter once you put more than one agent in production.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 2: PROTOCOLS -->
+      <div class="subsection">
+        <div class="subsection-header">
+          <div class="subsection-marker marker-proto"></div>
+          <div class="subsection-title">2. Agent Communication &amp; Protocols</div>
+          <div class="subsection-tag">1 resource</div>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">A2A Protocol — How Does A2A Work with MCP?</div>
+            <span class="resource-type type-docs">Docs</span>
+          </div>
+          <a class="resource-link" href="https://a2a-protocol.org/latest/" target="_blank">a2a-protocol.org/latest</a>
+          <p class="resource-summary">The Agent-to-Agent (A2A) protocol spec. Most LangGraph work happens inside one process; A2A is about how independently-built agents discover each other and exchange tasks across the network. The "How does A2A work with MCP?" section is the key read: MCP standardizes how an agent talks to <em>tools/data</em>; A2A standardizes how agents talk to <em>other agents</em>. They sit at different layers and complement each other.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 3: PRODUCTION STACK -->
+      <div class="subsection">
+        <div class="subsection-header">
+          <div class="subsection-marker marker-stack"></div>
+          <div class="subsection-title">3. The Production Agent Stack</div>
+          <div class="subsection-tag">5 resources</div>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">EP218: The Typical AI Agent Stack, Explained</div>
+            <span class="resource-type type-blog">Newsletter</span>
+          </div>
+          <a class="resource-link" href="https://share.google/HHbAKZ6wxrExDcr0c" target="_blank">share.google/HHbAKZ6wxrExDcr0c</a>
+          <p class="resource-summary">A layered diagram-style explanation of the components in a real-world agent stack — model layer, orchestration, memory, tools, observability, eval, deployment. Use it as a checklist: for your capstone agent, can you point to which component you're using at each layer? Gaps in that map are the next things worth learning.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Best Python AI Frameworks in 2026 (PyCharm Blog)</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://share.google/fgBziSpKiqInP6xuw" target="_blank">share.google/fgBziSpKiqInP6xuw</a>
+          <p class="resource-summary">JetBrains' annual roundup of Python AI frameworks. Lets you put LangChain/LangGraph in context against AutoGen, CrewAI, LlamaIndex, DSPy, Haystack, and whatever else has emerged. Useful for the "what's the rest of the ecosystem doing that I'm not?" question.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">GitHub Agentic Workflows</div>
+            <span class="resource-type type-github">GitHub</span>
+          </div>
+          <a class="resource-link" href="https://share.google/3SKglKcZES8isvTb2" target="_blank">share.google/3SKglKcZES8isvTb2</a>
+          <p class="resource-summary">GitHub's framework/template repo for building agentic workflows that live inside CI/CD and developer tooling. Interesting angle: many useful agents aren't chatbots, they're scripts wired into git events, PRs, or issue triage.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Hermes Agent (NousResearch, GitHub)</div>
+            <span class="resource-type type-github">GitHub</span>
+          </div>
+          <a class="resource-link" href="https://share.google/7th11qxOq27ckb6O5" target="_blank">share.google/7th11qxOq27ckb6O5</a>
+          <p class="resource-summary">NousResearch's open-source "agent that grows with you" project. Worth a skim of the README to understand its philosophy (persistent personal agent, local-first, tool use) and how it differs from cloud-hosted assistant frameworks.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Apple Foundation Models (Claude API Docs)</div>
+            <span class="resource-type type-docs">Docs</span>
+          </div>
+          <a class="resource-link" href="https://share.google/BzQ2pL436AWa8i1pq" target="_blank">share.google/BzQ2pL436AWa8i1pq</a>
+          <p class="resource-summary">Anthropic documentation page covering Apple's Foundation Models in relation to the Claude API. Useful background if you ever want to target on-device Apple silicon for inference, or if you want to understand how different vendor SDKs converge on similar tool-calling and message-format conventions.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 4: SKILL AUGMENTATION & FINE-TUNING -->
+      <div class="subsection">
+        <div class="subsection-header">
+          <div class="subsection-marker marker-tune"></div>
+          <div class="subsection-title">4. Customizing Agents — Skills, Fine-Tuning, Local Models</div>
+          <div class="subsection-tag">3 resources</div>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Microsoft's Open-Source SkillOpt (VentureBeat)</div>
+            <span class="resource-type type-news">News</span>
+          </div>
+          <a class="resource-link" href="https://share.google/oS6K42dp4tBKMAZCr" target="_blank">share.google/oS6K42dp4tBKMAZCr</a>
+          <p class="resource-summary">Coverage of Microsoft's SkillOpt, which upgrades agent "skills" without touching model weights. The interesting wrinkle for an agent-builder: most of your effort goes into the prompts/skills layer rather than the model layer, and there's now tooling that treats those skills as artifacts you can iteratively improve via search/optimization — basically a sibling to DSPy's prompt-optimization approach.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">LoRA Fine-Tuning Hyperparameters Guide (Unsloth Docs)</div>
+            <span class="resource-type type-guide">Guide</span>
+          </div>
+          <a class="resource-link" href="https://share.google/H27lSeYiAiW6LKw38" target="_blank">share.google/H27lSeYiAiW6LKw38</a>
+          <p class="resource-summary">Practical hyperparameter reference for LoRA (Low-Rank Adaptation) fine-tuning. When prompt engineering and RAG have plateaued for your agent and you need actual task-specific weight changes, this is where you start. Covers learning rate, rank (r), alpha, target modules, and dropout — the knobs that actually matter.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">How to Run Local AI Models with Hermes Agent (Unsloth)</div>
+            <span class="resource-type type-guide">Guide</span>
+          </div>
+          <a class="resource-link" href="https://share.google/44dLnzmnMZeHhAkmW" target="_blank">share.google/44dLnzmnMZeHhAkmW</a>
+          <p class="resource-summary">Hands-on walkthrough of running Hermes Agent against a locally-served model via Unsloth's tooling. The natural companion to the LoRA guide above — once you've fine-tuned a model, this is how you actually point an agent at it.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 5: INFRASTRUCTURE & SAFE EXECUTION -->
+      <div class="subsection">
+        <div class="subsection-header">
+          <div class="subsection-marker marker-infra"></div>
+          <div class="subsection-title">5. Infrastructure &amp; Safe Execution</div>
+          <div class="subsection-tag">2 resources</div>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">How to Choose the Right Sandbox for AI Agents</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://share.google/xZrcS4nHIL7LKdt9m" target="_blank">share.google/xZrcS4nHIL7LKdt9m</a>
+          <p class="resource-summary">Comparison of sandboxing approaches for agents that execute code or run tools — gVisor, Firecracker, Docker, language-level VMs, hosted services like E2B/Modal. If your agent's tool list includes "run this code" or "open this file from the internet," sandbox choice becomes a real architectural decision, not an afterthought.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">6 Docker Containers I Install on Every Server Before Anything Else</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://share.google/BC7Wvoxq1FomW2snM" target="_blank">share.google/BC7Wvoxq1FomW2snM</a>
+          <p class="resource-summary">DevOps-side reading. Once you have an agent deployed, you need the boring stuff around it: reverse proxy, log aggregation, monitoring, secrets, backup, container management. A useful "baseline server hygiene" checklist before your agent stack goes anywhere near a public IP.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 6: ADJACENT / EXTRA -->
+      <div class="subsection">
+        <div class="subsection-header">
+          <div class="subsection-marker marker-extra"></div>
+          <div class="subsection-title">6. Adjacent &amp; Extra</div>
+          <div class="subsection-tag">3 resources</div>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Understanding the Role of Multimodal Models in Computer Vision</div>
+            <span class="resource-type type-blog">Blog</span>
+          </div>
+          <a class="resource-link" href="https://share.google/8JNRssgQDdIokDKFw" target="_blank">share.google/8JNRssgQDdIokDKFw</a>
+          <p class="resource-summary">Sets up the vision side of multimodality. Relevant for agents that need to "see" — UI screenshots, document images, charts, surveillance feeds — and want to reason over them with a single multimodal model rather than wiring a separate OCR/CV pipeline.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">AI Mode — Saved Search</div>
+            <span class="resource-type type-article">Reference</span>
+          </div>
+          <a class="resource-link" href="https://share.google/aimode/M4wZda1rM2hCnj9XI" target="_blank">share.google/aimode/M4wZda1rM2hCnj9XI</a>
+          <p class="resource-summary">Saved AI Mode search you bookmarked while collecting these links. Re-open it to see whatever query you ran — likely related to the surrounding topics in this list.</p>
+        </div>
+
+        <div class="resource">
+          <div class="resource-header">
+            <div class="resource-title">Y Combinator Fall 2026 Applications</div>
+            <span class="resource-type type-opp">Opportunity</span>
+          </div>
+          <a class="resource-link" href="https://share.google/3rR17d5zpHQWtf57I" target="_blank">share.google/3rR17d5zpHQWtf57I</a>
+          <p class="resource-summary">Not a learning resource per se — included because it was in your notes. If your capstone or follow-on agent is shaping up into something with a real user wedge, this is the standard accelerator route worth knowing about.</p>
+        </div>
+      </div>
+
+      <div class="footnote">
+        <strong>Note on links:</strong> Several entries above use Google's <code>share.google/…</code> short URLs as you saved them. They redirect to the original publishers (VentureBeat, Aspire blog, Unsloth docs, etc.). The summaries describe what each resource is <em>about</em> based on the title/topic — verify the specifics when you open each one.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CLOSING -->
+  <div class="closing-card">
+    <h2>After Week 12 — What You Should Be Able to Do</h2>
+    <p>This week is about <em>breadth</em>. You don't need to deeply implement everything here. You should walk away able to make informed choices about the following:</p>
+    <ul class="closing-checklist">
+      <li>Argue for or against splitting an agent into multiple agents on a given task</li>
+      <li>Explain where A2A and MCP each fit, and why they don't compete</li>
+      <li>Sketch a production agent stack — model, orchestration, memory, tools, observability, eval, deploy</li>
+      <li>Know when to reach for LoRA fine-tuning vs. just better prompting/RAG</li>
+      <li>Pick a sandbox strategy before letting an agent execute arbitrary code or open arbitrary URLs</li>
+      <li>Read AutoGen / CrewAI / DSPy code without it feeling foreign relative to LangGraph</li>
+    </ul>
+  </div>
+
+  <footer class="page-footer">
+    Week 12 schedule built from your saved links · Continues the 6-week core curriculum &amp; capstone.
+  </footer>
+
+</div>
+</body>
+</html>
